@@ -17,6 +17,7 @@ import ImageEnhancer from './components/ImageEnhancer';
 import VideoEnhancer from './components/VideoEnhancer';
 import LiveNightVision from './components/LiveNightVision';
 import About from './components/About';
+import { API_BASE } from './config';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -27,7 +28,7 @@ export default function App() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch('/api/status');
+        const res = await fetch(`${API_BASE}/api/status`);
         if (res.ok) {
           const data = await res.json();
           setSystemStatus(data);

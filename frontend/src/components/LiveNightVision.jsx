@@ -12,6 +12,7 @@ import {
   Radio,
   Eye
 } from 'lucide-react';
+import { getApiUrl } from '../config';
 
 export default function LiveNightVision() {
   const [streamActive, setStreamActive] = useState(false);
@@ -116,7 +117,7 @@ export default function LiveNightVision() {
         const base64Data = capCanvas.toDataURL('image/jpeg', 0.65);
 
         try {
-          const res = await fetch('/api/live/process_frame', {
+          const res = await fetch(getApiUrl('/api/live/process_frame'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -242,7 +243,7 @@ export default function LiveNightVision() {
             <div style={{ position: 'relative', width: '100%', minHeight: '360px', background: '#020408', borderRadius: 'var(--radius-md)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {feedSource === 'server_mjpeg' && streamActive ? (
                 <img
-                  src={`/api/live/stream?mode=${mode}&gamma=${gamma}&clahe_clip=${claheClip}`}
+                  src={getApiUrl(`/api/live/stream?mode=${mode}&gamma=${gamma}&clahe_clip=${claheClip}`)}
                   alt="Server MJPEG Stream"
                   style={{ width: '100%', height: 'auto', display: 'block' }}
                 />

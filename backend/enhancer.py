@@ -10,25 +10,40 @@ Combines:
 import os
 import cv2
 import numpy as np
-import torch
-from backend.model import load_dce_model, DCENet
+
+try:
+    import torch
+    from backend.model import load_dce_model, DCENet
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    load_dce_model = None
+    DCENet = None
+    TORCH_AVAILABLE = False
 
 
 class NightVisionEnhancer:
     def __init__(self, model_path: str = "models/Epoch99.pth", prefer_cuda: bool = True):
         # Hardware acceleration detection
-        if prefer_cuda and torch.cuda.is_available():
+        if TORCH_AVAILABLE and prefer_cuda and torch.cuda.is_available():
             self.device = "cuda"
             self.device_name = torch.cuda.get_device_name(0)
-        else:
+        elif TORCH_AVAILABLE:
             self.device = "cpu"
             self.device_name = "CPU"
+        else:
+            self.device = "cpu"
+            self.device_name = "CPU (OpenCV Pipeline)"
 
         print(f"[Enhancer] Initializing on device: {self.device} ({self.device_name})")
 
         # Load Zero-DCE model
-        self.model, _ = load_dce_model(model_path, self.device)
-        self.has_model = self.model is not None
+        if TORCH_AVAILABLE and load_dce_model:
+            self.model, _ = load_dce_model(model_path, self.device)
+            self.has_model = self.model is not None
+        else:
+            self.model = None
+            self.has_model = False
 
         # Precompute common Gamma Lookup Tables (LUTs) for O(1) performance
         self.gamma_luts = {}

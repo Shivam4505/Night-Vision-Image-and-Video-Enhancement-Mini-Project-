@@ -13,6 +13,7 @@ import {
   Sliders,
   Film
 } from 'lucide-react';
+import { getApiUrl } from '../config';
 
 export default function VideoEnhancer() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -129,7 +130,7 @@ export default function VideoEnhancer() {
     formData.append('denoise', denoise.toString());
 
     try {
-      const res = await fetch('/api/video/enhance', {
+      const res = await fetch(getApiUrl('/api/video/enhance'), {
         method: 'POST',
         body: formData,
       });
@@ -153,7 +154,7 @@ export default function VideoEnhancer() {
 
     pollIntervalRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/video/status/${jobId}`);
+        const res = await fetch(getApiUrl(`/api/video/status/${jobId}`));
         if (!res.ok) return;
 
         const data = await res.json();
@@ -179,7 +180,7 @@ export default function VideoEnhancer() {
   const handleCancelJob = async () => {
     if (!jobId) return;
     try {
-      await fetch(`/api/video/cancel/${jobId}`, { method: 'POST' });
+      await fetch(getApiUrl(`/api/video/cancel/${jobId}`), { method: 'POST' });
       setIsProcessing(false);
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     } catch (e) {
@@ -415,7 +416,7 @@ export default function VideoEnhancer() {
 
               {jobStatus?.status === 'completed' && jobStatus?.enhanced_url && (
                 <a
-                  href={`${jobStatus.enhanced_url}?download=true`}
+                  href={`${getApiUrl(jobStatus.enhanced_url)}?download=true`}
                   download
                   className="btn btn-primary"
                   style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}
@@ -441,7 +442,7 @@ export default function VideoEnhancer() {
                       autoPlay
                       loop
                       playsInline
-                      src={jobStatus.enhanced_url}
+                      src={getApiUrl(jobStatus.enhanced_url)}
                     />
                   </div>
                 </div>

@@ -1,0 +1,10 @@
+{
+  "name": "night-vision-image-and-video-enhancement",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "uvicorn backend.main:app --reload --port 8000"
+  }
+}

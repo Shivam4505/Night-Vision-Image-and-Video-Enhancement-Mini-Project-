@@ -23,15 +23,28 @@ from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 import cv2
 import numpy as np
-import torch
+
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    TORCH_AVAILABLE = False
 
 from backend.enhancer import NightVisionEnhancer
 from backend.video_processor import VideoProcessor
 from backend.utils import analyze_image_metrics, b64_to_cv2, cv2_to_b64, cleanup_old_files
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+IS_SERVERLESS = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+if IS_SERVERLESS:
+    UPLOAD_DIR = "/tmp/uploads"
+    OUTPUT_DIR = "/tmp/outputs"
+else:
+    UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+    OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+
 MODEL_PATH = os.path.join(BASE_DIR, "models", "Epoch99.pth")
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -60,8 +73,9 @@ app.add_middleware(
 @app.get("/api/status")
 def get_system_status():
     """Returns system hardware, PyTorch device, model status, and versions."""
-    cuda_available = torch.cuda.is_available()
+    cuda_available = torch.cuda.is_available() if (TORCH_AVAILABLE and torch) else False
     device_name = torch.cuda.get_device_name(0) if cuda_available else "CPU (Standard)"
+    torch_ver = torch.__version__ if (TORCH_AVAILABLE and torch) else "N/A (OpenCV Mode)"
     
     return {
         "status": "online",
@@ -69,9 +83,9 @@ def get_system_status():
         "device_name": device_name,
         "cuda_available": cuda_available,
         "model_loaded": enhancer.has_model,
-        "model_name": "Zero-DCE (Zero-Reference Deep Curve Estimation)",
+        "model_name": "Zero-DCE (Zero-Reference Deep Curve Estimation)" if enhancer.has_model else "Advanced OpenCV CLAHE Engine",
         "model_path": MODEL_PATH if os.path.exists(MODEL_PATH) else None,
-        "torch_version": torch.__version__,
+        "torch_version": torch_ver,
         "opencv_version": cv2.__version__,
         "supported_modes": [
             {"id": "zerodce", "name": "Zero-DCE Deep Learning", "desc": "Pretrained 8-iteration curve estimation network"},

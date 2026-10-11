@@ -14,6 +14,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import CompareSlider from './CompareSlider';
+import { getApiUrl } from '../config';
 
 export default function ImageEnhancer() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -149,7 +150,7 @@ export default function ImageEnhancer() {
     formData.append('denoise_strength', denoiseStrength.toString());
 
     try {
-      const res = await fetch('/api/image/enhance', {
+      const res = await fetch(getApiUrl('/api/image/enhance'), {
         method: 'POST',
         body: formData,
       });
@@ -364,7 +365,7 @@ export default function ImageEnhancer() {
 
               {result && (
                 <a
-                  href={`${result.enhanced_url}?download=true`}
+                  href={`${getApiUrl(result.enhanced_url)}?download=true`}
                   download
                   className="btn btn-secondary"
                   style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
@@ -376,8 +377,8 @@ export default function ImageEnhancer() {
 
             {result ? (
               <CompareSlider
-                originalUrl={result.original_url}
-                enhancedUrl={result.enhanced_url}
+                originalUrl={getApiUrl(result.original_url)}
+                enhancedUrl={getApiUrl(result.enhanced_url)}
                 originalLabel="Low-Light Original"
                 enhancedLabel={`Enhanced (${result.mode_used.toUpperCase()})`}
               />
