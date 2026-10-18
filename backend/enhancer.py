@@ -24,10 +24,13 @@ except ImportError:
 
 class NightVisionEnhancer:
     def __init__(self, model_path: str = "models/Epoch99.pth", prefer_cuda: bool = True):
-        # Hardware acceleration detection
+        # Hardware acceleration detection (CUDA or Apple Silicon MPS)
         if TORCH_AVAILABLE and prefer_cuda and torch.cuda.is_available():
             self.device = "cuda"
             self.device_name = torch.cuda.get_device_name(0)
+        elif TORCH_AVAILABLE and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            self.device = "mps"
+            self.device_name = "Apple Silicon GPU (MPS)"
         elif TORCH_AVAILABLE:
             self.device = "cpu"
             self.device_name = "CPU"
